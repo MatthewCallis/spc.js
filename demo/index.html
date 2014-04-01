@@ -1,0 +1,143 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="spc.js"></script>
+<script>
+var player;
+function play(file) {
+  if (typeof file == "undefined") {
+    if (!player) {
+      document.querySelector('.files li a:first-child').onclick();
+    } else {
+      player.play();
+    }
+  } else {
+    loadRemote(file);
+  }
+  document.getElementById('play' ).style.display = 'none';
+  document.getElementById('pause').style.display = 'block';
+}
+
+function pause() {
+  player.pause()
+  document.getElementById('play' ).style.display = 'block';
+  document.getElementById('pause').style.display = 'none';
+}
+
+function status(text) {
+  document.getElementById('status').innerHTML = text;
+}
+
+function loadRemote(url) {
+  if (typeof player != "undefined") {
+    player.pause();
+  }
+
+  document.querySelector('.volume').style.display = 'inline-block';
+
+  player = AV.Player.fromURL(url);
+  player.play();
+
+  player.on('buffer', function(percent) {
+    // console.log('Buffer:', percent);
+    document.getElementById('buffered').innerText = Math.floor(percent).toString();
+  });
+
+  player.on('progress', function(percent) {
+    // console.log('Progress:', percent);
+    var mins, sec, msec;
+    msec = Math.floor(percent),
+    secs = msec/1000;
+    mins = Math.floor(secs/60).toString();
+    secs = Math.floor(secs%60).toString();
+    if (secs.length < 2) {
+      secs = "0" + secs;
+    }
+
+    if (mins.length < 2) {
+      mins = "0" + mins;
+    }
+
+    document.getElementById('played').innerText = mins + ":" + secs;
+  });
+
+  player.on('duration', function(duration){
+    console.log('Duration:', duration);
+    var mins, sec, msec;
+    msec = Math.floor(duration),
+    secs = msec/1000;
+    mins = Math.floor(secs/60).toString();
+    secs = Math.floor(secs%60).toString();
+    if (secs.length < 2) {
+      secs = "0" + secs;
+    }
+
+    if (mins.length < 2) {
+      mins = "0" + mins;
+    }
+
+    document.getElementById('duration').innerText = mins + ":" + secs;
+  });
+
+  player.on('metadata', function(metadata) {
+    console.log('Metadata:',metadata);
+    var title = metadata['songTitle'];
+
+    document.getElementById('title').innerText = title;
+  });
+
+  player.on('error', function(error) {
+    console.log(error);
+    throw error;
+  });
+}
+
+function volume(value) {
+  player.volume = value;
+}
+</script>
+<style>
+#player {
+  border: 1px solid #000;
+  display: inline-block;
+  padding: 10px;
+}
+#pause {
+  display: none;
+}
+.files li a {
+  text-decoration: underline;
+  color: blue;
+  cursor: pointer;
+}
+.volume {
+  margin: 0px;
+  padding: 0px;
+}
+</style>
+</head>
+<body>
+  <h1>spc.js</h1>
+  <p>Javascript SPC player using Aurora.js.</p>
+  <div id="player">
+    <div class="left">
+      <p><strong id="title">&lt;unknown title&gt;</strong></p>
+      <p><span id="buffered">0</span>% buffered.</p>
+      <p><span id="duration">0</span> duration.</p>
+      <p><span id="played">00:00</span> played.</p>
+      <p id="error"></p>
+      <p><button id="play" onclick="play()">Play</button><button id="pause" onclick="pause()">Pause</button></p>
+    </div>
+    <div class="right">
+      <p><input class="volume" type="range" onchange="volume(this.value);"></p>
+    </div>
+  </div>
+  <p>Songs:</p>
+  <ul class="files">
+    <li><a onclick="play('sd2-01.spc')">sd2-01.spc</a></li>
+    <!-- <li><a onclick="play('sd2-01.wav')">sd2-01.wav</a></li> -->
+    <li><a onclick="play('sd2-10.spc')">sd2-10.spc</a></li>
+    <!-- <li><a onclick="play('sd2-10.wav')">sd2-10.wav</a></li> -->
+  </ul>
+</body>
+</html>
