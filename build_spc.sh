@@ -5,7 +5,7 @@
 
 mkdir -p demo;
 EMCC_FAST_COMPILER=1 emcc \
-  -O1 --closure 1\
+  -O2 --closure 1\
   -s ASM_JS=1 \
   -s WARN_ON_UNDEFINED_SYMBOLS=1 \
   -s EXPORTED_FUNCTIONS="['_SpcJsInit', '_SpcJsDestroy', '_SpcJsDecodeAudio']" \

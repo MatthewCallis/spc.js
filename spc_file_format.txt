@@ -1,0 +1,136 @@
+SPC File Format v0.30
+=====================
+
+Offset Size  Description
+------ ----- ------------------------------------------------------------------
+00000h    33 File header "SNES-SPC700 Sound File Data v0.30"
+00021h     2 26,26
+00023h     1 26 = header contains ID666 information
+             27 = header contains no ID666 tag
+00024h     1 Version minor (i.e. 30)
+
+SPC700 Registers:
+00025h     2 PC
+00027h     1 A
+00028h     1 X
+00029h     1 Y
+0002Ah     1 PSW
+0002Bh     1 SP (lower byte)
+0002Ch     2 reserved
+
+ID666 Tag (text format):
+0002Eh    32 Song title
+0004Eh    32 Game title
+0006Eh    16 Name of dumper
+0007Eh    32 Comments
+0009Eh    11 Date SPC was dumped (MM/DD/YYYY)
+000A9h     3 Number of seconds to play song before fading out
+000ACh     5 Length of fade in milliseconds
+000B1h    32 Artist of song
+000D1h     1 Default channel disables (0 = enable, 1 = disable)
+000D2h     1 Emulator used to dump SPC:
+             0 = unknown
+	     1 = ZSNES
+	     2 = Snes9x
+000D3h    45 reserved (set to all 0's)
+
+ID666 Tag (binary format):
+0002Eh    32 Song title
+0004Eh    32 Game title
+0006Eh    16 Name of dumper
+0007Eh    32 Comments
+0009Eh     4 Date SPC was dumped (YYYYMMDD)
+000A2h     7 unused
+000A9h     3 Number of seconds to play song before fading out
+000ACh     4 Length of fade in milliseconds
+000B0h    32 Artist of song
+000D0h     1 Default channel disables (0 = enable, 1 = disable)
+000D1h     1 Emulator used to dump SPC:
+             0 = unknown
+	     1 = ZSNES
+	     2 = Snes9x
+000D2h    46 reserved (set to all 0's)
+
+00100h 65536 64KB RAM
+10100h   128 DSP Registers
+10180h    64 unused
+101C0h    64 Extra RAM (Memory region used when the IPL ROM region is set
+             to read-only)
+
+
+Extended ID666 Format
+=====================
+
+Extended information is stored at the end of the SPC file as an IFF chunk
+with an ID of "xid6".  Items that can be stored in the ID666 tag without any
+loss of data should not be stored in the extended area.
+
+Offset Size Description
+------ ---- ------------------------------------------------------------------
+0      4    Chunk type "xid6"
+4      4    Chunk size, not including header
+
+
+Sub-chunk Header
+----------------
+
+Inside the chunk are sub-chunks.  Each sub-chunk consists of a 4-byte header,
+and possibly data.  All data is 32-bit aligned.  If the data stored doesn't
+reach a 32-bit boundary, it will be padded with 0's.
+
+Offset Size Description
+------ ---- ------------------------------------------------------------------
+0      1    ID     - song name, length, etc.
+1      1    Type   - 0 means data is stored in the header
+                     non-zero means data is stored after header
+2      2    Length - if 'type' is non-zero, this contains the length of the
+                     following data
+
+
+Extended ID666 Items
+--------------------
+
+ID:   00-0F - Items from original ID666 tag
+      10-1F - Extended items
+      30-3F - Items related to playback
+
+Type: Length  - 'Type' contains a 0, and the tag item is saved in the 'Length'
+                of the sub-chunk header.
+      String  - 'Type' contains a 1, and the tag item is stored as a null
+                terminated string (max 256 characters including null).
+                Currently, strings saved in SNESAmp use ANSI characters.
+                However, support for UNICODE may be added.
+      Integer - 'Type' contains a 4, and the tag item is stored as an integer
+                following the header.  Currently all integer items are four
+                bytes.
+
+Size: The minimum and maximum sizes of an item
+
+ID  Type    Size  Description
+--- ------- ----- ------------------------------------------------------------
+01h String  4-256 Song name
+02h String  4-256 Game name
+03h String  4-256 Artist's name
+04h String  4-256 Dumper's name
+05h Integer 4     Date song was dumped (stored as yyyymmdd)
+06h Length  1     Emulator used
+07h String  4-256 Comments
+10h String  4-256 Official Soundtrack Title
+11h Length  1     OST disc
+12h Length  2     OST track (upper byte is the number 0-99, lower byte is an
+                  optional ASCII character)
+13h String  4-256 Publisher's name
+14h Length  2     Copyright year
+30h Integer 4     Introduction length (Lengths are stored in ticks.  A tick is
+31h Integer 4     Loop length          1/64000th of a second.  The maximum
+32h Integer 4     End length           length is 383999999 ticks.  The End can
+33h Integer 4     Fade length          contain a negative value.)
+34h Length  1     Muted channels (a bit is set for each channel that's muted)
+35h Length  1     Number of times to loop the loop section of the song
+36h Integer 4     Amplification value to apply to output (65536 = Normal SNES)
+
+This may seem like a messy way to implement a format, but I wanted to assure
+something that would be easily expandible.
+
+The source code to SNESAmp (available at http://www.alpha-ii.com) contains a
+C++ class for reading and writing ID666 and xid6 tags.
