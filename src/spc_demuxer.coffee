@@ -18,7 +18,7 @@ class SPCDemuxer extends AV.Demuxer
       Module.ccall "SpcJsInit", "void", ["number", "number"], [fileBuffer, length]
 
   readChunk: =>
-    if not @readStart and @stream.available(33)
+    if not @readStart and @stream.available(66048)
       if @stream.peekString(0, 33) isnt 'SNES-SPC700 Sound File Data v0.30'
         return @emit 'error', 'Invalid SPC file.'
 
