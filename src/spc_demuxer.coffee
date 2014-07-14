@@ -13,6 +13,7 @@ class SPCDemuxer extends AV.Demuxer
       # Confirmed Recieved Correctly
       # 83 78 69 83 45 83 80 67 ...
       # 53 4E 45 53 2D 53 50 43 ...
+      delete fileBuffer
       fileBuffer = Module._malloc(length)
       Module.HEAPU8.set buffer.data, fileBuffer
       Module.ccall "SpcJsInit", "void", ["number", "number"], [fileBuffer, length]

@@ -2628,6 +2628,7 @@ SPCDemuxer = (function(_super) {
     if (this.stream.available(8)) {
       buffer = this.stream.list.first;
       length = buffer.length;
+      delete fileBuffer;
       fileBuffer = Module._malloc(length);
       Module.HEAPU8.set(buffer.data, fileBuffer);
       return Module.ccall("SpcJsInit", "void", ["number", "number"], [fileBuffer, length]);
@@ -2786,7 +2787,7 @@ SPCDecoder = (function(_super) {
 
   SPCDecoder.prototype.init = function() {
     this.sample_count = 0;
-    this.length = 2048 / 4;
+    this.length = 2048;
     if (!window.__spcAudioBuffer) {
       window.__spcAudioBuffer = Module._malloc(this.length);
     }

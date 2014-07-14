@@ -4,7 +4,7 @@ class SPCDecoder extends AV.Decoder
   init: =>
     @sample_count = 0
     # Get data byte size, allocate memory on Emscripten heap, and get pointer.
-    @length = 2048
+    @length = 2048 # / 4
     window.__spcAudioBuffer = Module._malloc(@length)  unless window.__spcAudioBuffer
 
     # Copy data to Emscripten heap (directly accessed from Module.HEAPU8).
