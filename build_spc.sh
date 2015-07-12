@@ -5,7 +5,7 @@
 # EMCC_FAST_COMPILER=0
 # -s ASSERTIONS=1 \
 # -O2 --closure 1\
-mkdir -p demo;
+mkdir -p dist;
 
 # Build spc.js
 emcc \
@@ -19,5 +19,5 @@ emcc \
   src/spc-libs.c \
   -o src/spc-libs.js
 
-importer spc.imports.js spc.js && cp spc.js demo/spc.js;
-importer spc.aurora.js spc-aurora.js && cp spc-aurora.js demo/spc-aurora.js;
+importer spc.imports.js spc.js && cp spc.js dist/spc.js;
+importer spc.aurora.js spc-aurora.js && cp spc-aurora.js dist/spc-aurora.js;
