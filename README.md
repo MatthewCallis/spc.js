@@ -27,4 +27,4 @@ Build the JavaScript code with [importer](https://npmjs.org/package/importer) an
 
 ## TODO
 
-* Clean up any memory leaks the come up.
+* Clean up any memory leaks that come up.

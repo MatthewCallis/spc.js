@@ -1,61 +1,59 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
 <head>
-<style>
-#player {
-  border: 1px solid #000;
-  display: inline-block;
-  padding: 10px;
-}
-#pause {
-  display: none;
-}
-.files li a {
-  text-decoration: underline;
-  color: blue;
-  cursor: pointer;
-}
-.volume {
-  margin: 0px;
-  padding: 0px;
-}
-</style>
+<meta charset='utf-8'>
+<link href="style.css" media="all" rel="stylesheet" type="text/css">
+<title>SPC.js</title>
 </head>
 <body>
-  <h1>spc.js</h1>
-  <p>Javascript SPC player using Aurora.js.</p>
-  <div id="player">
-    <div class="left">
-      <p><strong id="title">&lt;unknown title&gt;</strong></p>
-      <p><span id="buffered">0</span>% buffered.</p>
-      <p><span id="duration">0</span> duration.</p>
-      <p><span id="played">00:00</span> played.</p>
-      <p id="error"></p>
-      <button id="play" onclick="play()">Play</button>
-      <button id="pause" onclick="pause()">Pause</button>
-    </div>
-    <div class="right">
-      <p><input class="volume" type="range"></p>
-    </div>
+<div class="spc-player">
+  <img src="http://snes.in/screenshots/seiken-densetsu-2/seiken-densetsu-2.4.png" alt="artwork" width="256" height="224">
+  <div class="content">
+    <div class="track" id="title">N/A</div>
+    <div class="artist" id="game">N/A</div>
+    <div class="album" id="year">N/A</div>
+    <ul class="controls">
+      <li onclick="loadRemote('spc/sd2-10.spc');">❤</li>
+      <li onclick="loadRemote('spc/smti-02.spc');">☃</li>
+      <li onclick="loadRemote('spc/sfmt-09.spc');">♲</li>
+    </ul>
+    <progress value="0" max="100" id="progress">
+      <div class="tracker active"></div>
+    </progress>
+    <span id="elapsedtime">00:00</span>
+    <span id="duration" style="float:right;">00:00</span>
+    <ul class="play-controls">
+      <li id="play">▶</li>
+    </ul>
   </div>
-  <p>Songs:</p>
-  <ul class="files">
-    <li><a onclick="loadRemote('sfmt-09.spc')">sfmt-09.spc</a></li>
-    <li><a onclick="loadRemote('sd2-01.spc')">sd2-01.spc</a></li>
-    <li><a onclick="loadRemote('sd2-10.spc')">sd2-10.spc</a></li>
-    <!-- <li><a onclick="loadRemote('sd2-01.wav')">sd2-01.wav</a></li> -->
-    <!-- <li><a onclick="loadRemote('sd2-10.wav')">sd2-10.wav</a></li> -->
-  </ul>
+</div>
+
+<a href="http://codepen.io/markmurray/pen/heAqg">Audio Player design based on the codepen by Mark Murray.</a>
+
+<script src="spc-aurora.js"></script>
 <script src="spc.js"></script>
 <script>
 var example_player;
-document.querySelector('.volume').addEventListener('input', function(event) {
-  if(example_player){
-    example_player.volume = event.target.value;
-  }
-}, false);
 
-function play(file) {
+// document.querySelector('.volume').addEventListener('input', function(event) {
+//   if(example_player){
+//     example_player.volume = event.target.value;
+//   }
+// }, false);
+
+var playing = false;
+var play = document.getElementById('play');
+
+play.addEventListener("click", function(){
+  if (playing) {
+    pauseAudio();
+  }
+  else {
+    playAudio();
+  }
+});
+
+function playAudio(file) {
   if (typeof file === "undefined") {
     if (example_player) {
       example_player.play();
@@ -64,19 +62,19 @@ function play(file) {
   else {
     loadRemote(file);
   }
-  document.getElementById('play' ).style.display = 'none';
-  document.getElementById('pause').style.display = 'block';
+  playing = true;
 }
 
-function pause() {
-  example_player.pause()
-  document.getElementById('play' ).style.display = 'block';
-  document.getElementById('pause').style.display = 'none';
+function pauseAudio() {
+  if (example_player) {
+    example_player.pause();
+    playing = false;
+  }
 }
 
 function displayTime(input){
     var mins, sec, msec;
-    msec = Math.floor(input),
+    msec = Math.floor(input);
     secs = msec / 1000;
     mins = Math.floor(secs / 60).toString();
     secs = Math.floor(secs % 60).toString();
@@ -89,32 +87,45 @@ function displayTime(input){
     return mins + ":" + secs;
 }
 
+var current_duration = 0;
 function loadRemote(url) {
   if (example_player) {
-    example_player.pause();
+    pauseAudio()
+    document.getElementById('progress').value = 0;
+    document.getElementById('elapsedtime').innerText = '00:00';
   }
   example_player = AV.Player.fromURL(url);
   example_player.preload();
   example_player.on('buffer', function(percent){
     console.log('Buffer:', percent);
-    document.getElementById('buffered').innerText = Math.floor(percent).toString();
   });
   example_player.on('progress', function(percent) {
-    document.getElementById('played').innerText = displayTime(percent);
+    document.getElementById('progress').value = Math.floor((percent / current_duration) * 100);
+    document.getElementById('elapsedtime').innerText = displayTime(percent);
   });
   example_player.on('duration', function(duration){
     console.log('Duration:', duration);
+    current_duration = duration;
     document.getElementById('duration').innerText = displayTime(duration);
   });
   example_player.on('metadata', function(metadata) {
     console.log('Metadata:',metadata);
     document.getElementById('title').innerText = metadata['songTitle'];
+    document.getElementById('game').innerText = metadata['gameTitle'];
+    if (metadata['copyrightYear']) {
+      document.getElementById('year').innerText = metadata['copyrightYear'];
+    }
+    else {
+      document.getElementById('year').innerText = '';
+    }
   });
   example_player.on('error', function(error) {
     console.log(error);
     throw error;
   });
 }
+
+loadRemote('spc/sd2-01.spc');
 </script>
 </body>
 </html>

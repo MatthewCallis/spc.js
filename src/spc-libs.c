@@ -6,7 +6,7 @@
 
 SNES_SPC* snes_spc;
 SPC_Filter* filter;
-static int sample_count_;
+static int sample_count;
 
 void error( const char* str ) {
   if ( str ) {
@@ -47,7 +47,7 @@ void SpcJsInit(unsigned char* spc, int spc_size) {
   spc_clear_echo( snes_spc );
   // Clear filter before playing.
   spc_filter_clear( filter );
-  sample_count_ = 0;
+  sample_count = 0;
   // printf("SpcJsInit: done!\n");
 }
 
@@ -57,7 +57,7 @@ int SpcJsDecodeAudio(short *outbuf, int buf_size) {
   error( spc_play( snes_spc, buf_size, outbuf ) );
   // printf("SpcJsDecodeAudio: Filtering Samples...\n");
   spc_filter_run( filter, outbuf, buf_size );
-  sample_count_ += buf_size;
+  sample_count += buf_size;
   // printf("SpcJsDecodeAudio: Done!\n");
-  return sample_count_;
+  return sample_count;
 }
