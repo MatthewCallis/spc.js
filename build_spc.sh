@@ -1,13 +1,27 @@
 #!/bin/bash
-# https://github.com/kripken/emscripten/wiki/LLVM-Backend
-# https://github.com/kripken/emscripten/wiki/Optimizing-Code
+# http://kripken.github.io/emscripten-site/docs/getting_started/FAQ.html
+# http://kripken.github.io/emscripten-site/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html
+# http://kripken.github.io/emscripten-site/docs/porting/Debugging.html#debugging
+# http://kripken.github.io/emscripten-site/docs/building_from_source/LLVM-Backend.html
+# http://kripken.github.io/emscripten-site/docs/optimizing/Optimizing-Code.html
 # Old flags for testing:
 # EMCC_FAST_COMPILER=0
 # -s ASSERTIONS=1 \
 # -O2 --closure 1\
 mkdir -p dist;
 
+# TODO: Test these
+# -s ALLOW_MEMORY_GROWTH=1 \
+# -s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
+# --profiling \
+# -s ERROR_ON_UNDEFINED_SYMBOLS=1 \
+
 # Build spc.js
+emcc -v
+
+# Try this out
+emcc --clear-cache
+
 emcc \
   -O3 \
   -s ASM_JS=1 \
