@@ -35,6 +35,12 @@ emcc -v
 # Try this out
 emcc --clear-cache
 
+# // 2017-01 - --separate-asm to avoid memory spikes
+# // https://kripken.github.io/emscripten-site/docs/optimizing/Optimizing-Code.html
+# http://floooh.github.io/2016/08/27/asmjs-diet.html
+# -fno-exceptions \ #
+# -fno-rtti \ #
+# -s AGGRESSIVE_VARIABLE_ELIMINATION=1
 emcc \
   -O3 \
   -s ASM_JS=1 \
