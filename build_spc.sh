@@ -13,8 +13,6 @@ mkdir -p dist;
 # TODO: Test these
 # --profiling \
 # -s ERROR_ON_UNDEFINED_SYMBOLS=1 \
-# -s ALLOW_MEMORY_GROWTH=1 \
-# -s NO_FILESYSTEM=1 \
 # -s NO_BROWSER=1 \
 
 # NOTE: http://kripken.github.io/emscripten-site/docs/optimizing/Optimizing-Code.html#miscellaneous-code-size-tips
@@ -29,26 +27,32 @@ mkdir -p dist;
 # This embeds the .mem files, so we do not need to include the .mem file seperately.
 # --memory-init-file 0
 
+# NOTE: ?
+# This fixes Firefox 51 stutter.
+# -s ALLOW_MEMORY_GROWTH=1 \
+
 # Build spc.js
 emcc -v
 
-# Try this out
-emcc --clear-cache
+# Try this out when building isn't updating, slows down the build process.
+# emcc --clear-cache
 
-# // 2017-01 - --separate-asm to avoid memory spikes
-# // https://kripken.github.io/emscripten-site/docs/optimizing/Optimizing-Code.html
+# 2017-01 - --separate-asm to avoid memory spikes
+# https://kripken.github.io/emscripten-site/docs/optimizing/Optimizing-Code.html
 # http://floooh.github.io/2016/08/27/asmjs-diet.html
-# -fno-exceptions \ #
-# -fno-rtti \ #
-# -s AGGRESSIVE_VARIABLE_ELIMINATION=1
+# --separate-asm \ NOTE: This doesn't run as per the docs.
+
 emcc \
   -O3 \
   -s ASM_JS=1 \
-  -s WARN_ON_UNDEFINED_SYMBOLS=1 \
+  -s ERROR_ON_UNDEFINED_SYMBOLS=1 \
+  -s ALLOW_MEMORY_GROWTH=1 \
   -s NO_EXIT_RUNTIME=1 \
   -s NO_FILESYSTEM=1 \
   -s EXPORTED_FUNCTIONS="['_SpcJsInit', '_SpcJsDestroy', '_SpcJsDecodeAudio']" \
   --memory-init-file 0 \
+  -fno-exceptions \
+  -fno-rtti \
   -Iinclude \
   include/snes_spc/*.cpp \
   src/spc-libs.c \

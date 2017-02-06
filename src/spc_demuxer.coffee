@@ -2,6 +2,8 @@ class SPCDemuxer extends AV.Demuxer
   AV.Demuxer.register(SPCDemuxer)
 
   @probe: (buffer) ->
+    if buffer.peekString(0, 33) isnt 'SNES-SPC700 Sound File Data v0.30'
+      console.error('Not an SPC file?', buffer.peekString(0, 33))
     return buffer.peekString(0, 33) is 'SNES-SPC700 Sound File Data v0.30'
 
   init: ->
@@ -71,7 +73,7 @@ class SPCDemuxer extends AV.Demuxer
             bytes_readin += (2 + sub_chunk_length)
           else if sub_chunk_type is 0
             sub_chunk_data = @stream.peekUInt16(offset + 2, true)
-            list = new AV.BufferList;
+            list = new AV.BufferList
             list.append @stream.peekSingleBuffer(offset + 2, 2)
             sub_chunk_raw  = new AV.Stream list
             offset += 4
@@ -128,7 +130,7 @@ class SPCDemuxer extends AV.Demuxer
     # Duration
     duration = parseInt(@stream.peekString(169, 3)) * 1000 # A9h, seconds
     fadeOut  = parseInt(@stream.peekString(172, 3))        # ACh, ms
-    @seconds = parseInt duration + fadeOut
+    @seconds = parseInt(duration + fadeOut)
     @emit 'duration', @seconds
 
     # Send Data to Demuxer

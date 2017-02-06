@@ -14,7 +14,8 @@ class SPCDecoder extends AV.Decoder
     return
 
   readChunk: =>
-    unless @stream.available(66000)
+    # NOTE: 66048 would be the entire file, a 1 second sample is 65536
+    unless @stream.available(66048)
       return null
 
     while @sample_count < ((@demuxer.seconds / 1000) * 32000 * 2)
