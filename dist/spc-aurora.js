@@ -1384,8 +1384,9 @@ AV.AudioDevice = (function(superClass) {
   };
 
   AudioDevice.prototype.destroy = function() {
+    var ref;
     this.stop();
-    return this.device.destroy();
+    return (ref = this.device) != null ? ref.destroy() : void 0;
   };
 
   AudioDevice.prototype.seek = function(currentTime) {
@@ -2369,88 +2370,6 @@ WebAudioDevice = (function(superClass) {
   return WebAudioDevice;
 
 })(AV.EventEmitter);
-  var MozillaAudioDevice,
-  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
-
-MozillaAudioDevice = (function(superClass) {
-  var createTimer, destroyTimer;
-
-  extend(MozillaAudioDevice, superClass);
-
-  AV.AudioDevice.register(MozillaAudioDevice);
-
-  MozillaAudioDevice.supported = (typeof Audio !== "undefined" && Audio !== null) && 'mozWriteAudio' in new Audio;
-
-  function MozillaAudioDevice(sampleRate, channels) {
-    this.sampleRate = sampleRate;
-    this.channels = channels;
-    this.refill = bind(this.refill, this);
-    this.audio = new Audio;
-    this.audio.mozSetup(this.channels, this.sampleRate);
-    this.writePosition = 0;
-    this.prebufferSize = this.sampleRate / 2;
-    this.tail = null;
-    this.timer = createTimer(this.refill, 100);
-  }
-
-  MozillaAudioDevice.prototype.refill = function() {
-    var available, buffer, currentPosition, written;
-    if (this.tail) {
-      written = this.audio.mozWriteAudio(this.tail);
-      this.writePosition += written;
-      if (this.writePosition < this.tail.length) {
-        this.tail = this.tail.subarray(written);
-      } else {
-        this.tail = null;
-      }
-    }
-    currentPosition = this.audio.mozCurrentSampleOffset();
-    available = currentPosition + this.prebufferSize - this.writePosition;
-    if (available > 0) {
-      buffer = new Float32Array(available);
-      this.emit('refill', buffer);
-      written = this.audio.mozWriteAudio(buffer);
-      if (written < buffer.length) {
-        this.tail = buffer.subarray(written);
-      }
-      this.writePosition += written;
-    }
-  };
-
-  MozillaAudioDevice.prototype.destroy = function() {
-    return destroyTimer(this.timer);
-  };
-
-  MozillaAudioDevice.prototype.getDeviceTime = function() {
-    return this.audio.mozCurrentSampleOffset() / this.channels;
-  };
-
-  createTimer = function(fn, interval) {
-    var url, worker;
-    url = AV.Buffer.makeBlobURL("setInterval(function() { postMessage('ping'); }, " + interval + ");");
-    if (url == null) {
-      return setInterval(fn, interval);
-    }
-    worker = new Worker(url);
-    worker.onmessage = fn;
-    worker.url = url;
-    return worker;
-  };
-
-  destroyTimer = function(timer) {
-    if (timer.terminate) {
-      timer.terminate();
-      return URL.revokeObjectURL(timer.url);
-    } else {
-      return clearInterval(timer);
-    }
-  };
-
-  return MozillaAudioDevice;
-
-})(AV.EventEmitter);
   return global.AV = AV;
 })();
 var SPCDemuxer,
@@ -2469,6 +2388,9 @@ SPCDemuxer = (function(superClass) {
   AV.Demuxer.register(SPCDemuxer);
 
   SPCDemuxer.probe = function(buffer) {
+    if (buffer.peekString(0, 33) !== 'SNES-SPC700 Sound File Data v0.30') {
+      console.error('Not an SPC file?', buffer.peekString(0, 33));
+    }
     return buffer.peekString(0, 33) === 'SNES-SPC700 Sound File Data v0.30';
   };
 
@@ -2662,7 +2584,7 @@ SPCDecoder = (function(superClass) {
 
   SPCDecoder.prototype.readChunk = function() {
     var result;
-    if (!this.stream.available(66000)) {
+    if (!this.stream.available(66048)) {
       return null;
     }
     while (this.sample_count < ((this.demuxer.seconds / 1000) * 32000 * 2)) {
