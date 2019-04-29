@@ -32,7 +32,7 @@ mkdir -p dist;
 # -s ALLOW_MEMORY_GROWTH=1 \
 
 # Build spc.js
-emcc -v
+# emcc -v
 
 # Try this out when building isn't updating, slows down the build process.
 # emcc --clear-cache
@@ -43,8 +43,12 @@ emcc -v
 # --separate-asm \ NOTE: This doesn't run as per the docs.
 
 emcc \
+  -v \
   -O3 \
-  -s ASM_JS=1 \
+  -s WASM=1 \
+  -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap", "ccall"]' \
+  -s ASSERTIONS=1 \
+  -s SAFE_HEAP=1 \
   -s ERROR_ON_UNDEFINED_SYMBOLS=1 \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s NO_EXIT_RUNTIME=1 \
@@ -58,5 +62,5 @@ emcc \
   src/spc-libs.c \
   -o src/spc-libs.js
 
-importer spc.imports.js spc.js && cp spc.js dist/spc.js;
-importer spc.aurora.js spc-aurora.js && cp spc-aurora.js dist/spc-aurora.js;
+# importer spc.imports.js spc.js && cp spc.js dist/spc.js;
+# importer spc.aurora.js spc-aurora.js && cp spc-aurora.js dist/spc-aurora.js;

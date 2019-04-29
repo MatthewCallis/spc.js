@@ -2400,7 +2400,9 @@ SPCDemuxer = (function(superClass) {
       buffer = this.stream.list.first;
       length = buffer.length;
       delete fileBuffer;
-      fileBuffer = Module._malloc(length);
+      if (Module && Module._malloc) {
+        fileBuffer = Module._malloc(length);
+      }
       Module.HEAPU8.set(buffer.data, fileBuffer);
       return Module.ccall("SpcJsInit", "void", ["number", "number"], [fileBuffer, length]);
     }
@@ -2573,11 +2575,11 @@ SPCDecoder = (function(superClass) {
   SPCDecoder.prototype.init = function() {
     this.sample_count = 0;
     this.length = 2048;
-    if (!window.__spcAudioBuffer) {
+    if (!window.__spcAudioBuffer && Module._malloc) {
       window.__spcAudioBuffer = Module._malloc(this.length);
     }
     this.data_heap = new Int16Array(Module.HEAPU8.buffer, window.__spcAudioBuffer, this.length);
-    if (window.__spcAudioBuffer) {
+    if (window.__spcAudioBuffer && Module._free) {
       Module._free(window.__spcAudioBuffer.byteOffset);
     }
   };
